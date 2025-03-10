@@ -1,8 +1,8 @@
 # Lies-Kill-Case-Zero
 Lies Kill: Case Zero is an **AI-driven murder mystery**
 
-  The grand estate of Count Fields was once a palace of opulence, riches, and aristocracy. However, as of last night,
-  its halls were filled with the bloody aftermath of a brutal murder. The Count lies lifeless, and now five suspects remain to linger within the mansion.
+  The grand estate of the Duke de Valimont was once a palace of opulence, riches, and aristocracy. However, as of last night,
+  its halls were filled with the bloody aftermath of a brutal murder. The Duke lies lifeless, and now five suspects remain to linger within the mansion.
   Each carries a potential motive, each cloaked in its twisted narratives. At least one of them knows the dark sinister reality of where they stood last night.
 
   As a private investigator summoned in the dead of night, you find yourself entangled with these perplexing figures. A storm rages outside, intensifying the suffocating tension that hangs thick in the air.
