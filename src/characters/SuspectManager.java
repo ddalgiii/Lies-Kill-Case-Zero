@@ -16,10 +16,10 @@ public class SuspectManager {
         previousMurders = new ArrayList<>();
 
         //initate suspects with their roles and REAL motives
-        suspects.add(new Suspect("Petunia Fields", "Daughter","Forced marrgiage"));
-        suspects.add(new Suspect("Mr.Duke Denham","Butler","His wife lost her position"));
-        suspects.add(new Suspect("Mrs.Lois Hemming", "Maid", "Lost head maid position"));
-        suspects.add(new Suspect("Miss Oliva Joe","Lover","Wanted to escape"));
+        suspects.add(new Suspect("Lady Margaret Primelle de Valimont", "Daughter","Forced marrgiage"));
+        suspects.add(new Suspect("Daryus Denham","Chamberlain","His wife lost her position"));
+        suspects.add(new Suspect("Loenna Kammerzell", "Maid", "Lost head maid position"));
+        suspects.add(new Suspect("Anna Joe","Lover","Wanted to escape"));
         suspects.add(new Suspect("Scottie Joe","Stable Boy","Revenge for his sister"));
 
         lastMurderer = null; //no murderer at the start
