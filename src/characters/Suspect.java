@@ -1,48 +1,58 @@
 package characters;
 
-import java.util.List;
-import java.util.Objects;
-
 public class Suspect {
     private String name;
-    @SuppressWarnings("unused")
     private String role;
     private String motive;
-    private boolean guilty;
-    private List<String> alibis;
+    private boolean isGuilty;
+    private String personality; //to define each NPCs personality YAY
 
-    public Suspect(String name, String role, String motive){
-        this.name=name;
-        this.role=role;
-        this.motive=motive;
-        this.guilty=false;
+    public Suspect(String name, String role, String motive, String personality) {
+        this.name = name;
+        this.role = role;
+        this.motive = motive;
+        this.personality = personality;
+        this.isGuilty = false;
     }
 
-    public void setGuilty(boolean guilty){
-        this.guilty=guilty;
-    }
-    public boolean isGuilty(){
-        return guilty;
-    }
-    public String getAlibi(){
-        return alibis.get((int)(Math.random()*alibis.size())); //Random alibi selection
-    }
-    public String getName(){
+    // Getters and setters for the fields
+    public String getName() {
         return name;
     }
-    public String getMotive(){
-        return motive;
-    }
-     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        Suspect suspect = (Suspect) obj;
-        return Objects.equals(name, suspect.name);
+
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getMotive() {
+        return motive;
+    }
+
+    public void setMotive(String motive) {
+        this.motive = motive;
+    }
+
+    public boolean isGuilty() {
+        return isGuilty;
+    }
+
+    public void setGuilty(boolean isGuilty) {
+        this.isGuilty = isGuilty;
+    }
+    
+    public String getPersonality() {
+        return personality;
+    }
+
+    public void setSalutation(String salutation) {
+        // Implementation for setting salutation
     }
 }
