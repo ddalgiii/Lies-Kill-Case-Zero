@@ -1,33 +1,33 @@
 package game;
 
-import characters.Suspect;
-import characters.SuspectManager;
 import java.util.List;
 
-public class GameLauncher {
-    public static void main(String[]args){
-        System.out.println("\nStarting Lies Kill: Case Zero...\n");
+import ai.AIDialogueGenerator;
+import characters.Suspect;
+import characters.SuspectManager;
+import javafx.application.Application;
+import javafx.stage.Stage;
+import ui.GameUI; // Ensure GameUI is properly imported
 
-        //intiate suspect manager
-        SuspectManager manager = new SuspectManager();
+// Main JavaFX class
+public class GameLauncher extends Application {
+    
+    @Override
+    public void start(Stage primaryStage) {
+        GameUI gameUI = new GameUI(); // Initialize UI
+        gameUI.start(primaryStage);
 
-        //run one round
-        System.out.println("New Round: ");
-
-        //assign a murderer for this round
-        Suspect murderer = manager.assignMurderer();
-        List<Suspect> allSuspects = manager.getSuspects();
-
-        //print all suspects and their status
-        for(Suspect suspect : allSuspects){
-            if(suspect.equals(murderer)){
-                System.out.println(suspect.getName()+" Murderer!!");
-            } else {
-                System.out.println(suspect.getName()+" Innocent");
-            }
+        // Generate salutations for each hardcoded suspect
+        SuspectManager suspectManager = new SuspectManager(); // Ensure an instance of SuspectManager is created
+        List<Suspect> suspects = suspectManager.getSuspects(); // Retrieve the list properly
+        
+        for (Suspect suspect : suspects) {
+            String salutation = AIDialogueGenerator.generateText(suspect.getName() + " is " + suspect.getPersonality() + " and plays the role of " + suspect.getRole() + ". Their motivation is " + suspect.getMotive() + ". Generate a fitting greeting based on this.");
+            System.out.println(salutation); // Use the salutation variable
         }
-        System.out.println(); //space for readability
+    }
 
-    System.out.println("Murder selection test completed.");
+    public static void main(String[] args) {
+        launch(args);
     }
 }
