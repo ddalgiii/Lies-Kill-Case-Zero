@@ -44,6 +44,6 @@ Lies Kill: Case Zero is an **AI-driven murder mystery**
       
   Game Engine: JavaFX
   
-  AI Intergration: Ollama
+  AI Intergration: Ollama Mistral AI
   
   Development Enviroment: VsCode
