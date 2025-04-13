@@ -4,58 +4,55 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.StandardCharsets;package ai;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+
+import org.json.JSONObject;
 
 public class AIDialogueGenerator {
-    // Hugging Face Inference API endpoint for GPT-2 (you can change the model if desired)
-    private static final String HF_API_URL = "https://api-inference.huggingface.co/models/gpt2";
-    // Replace with your Hugging Face API token (free tier available)
-    private static final String HF_API_TOKEN = "hugging face API token";
+    private static final String API_URL = " your API URL "; // Ensure correct API URL
 
-    /**
-     * Generates text based on the given prompt using the Hugging Face Inference API.
-     *
-     * @param prompt the prompt to send to the model
-     * @return the generated text or an error message
-     */
-    public static String generateText(String prompt) {
+    public static String generateText(String userInput) {
         try {
-            // Build the JSON payload
-            JsonObject jsonBody = new JsonObject();
-            jsonBody.addProperty("inputs", prompt);
-            // Optionally, you can add parameters such as max_length, temperature, etc.
-            String requestBody = new Gson().toJson(jsonBody);
+            URL url = new URL(API_URL);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(HF_API_URL))
-                    .header("Authorization", "Bearer " + HF_API_TOKEN)
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                    .build();
+            // Create JSON payload
+            JSONObject json = new JSONObject();
+            json.put("model", "model you are using"); // Ensure correct model name
+            json.put("prompt", userInput);
+            json.put("stream", false);
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // Debug: print raw response (optional)
-            System.out.println("Raw API Response: " + response.body());
-            
-            // The response is typically a JSON array; parse it:
-            JsonArray jsonArray = new Gson().fromJson(response.body(), JsonArray.class);
-            if (jsonArray.size() > 0) {
-                JsonObject firstResult = jsonArray.get(0).getAsJsonObject();
-                // For GPT-2 on Hugging Face, the key is usually "generated_text"
-                String generatedText = firstResult.get("generated_text").getAsString();
-                return generatedText;
-            } else {
-                return "API Error: No generated text returned.";
+            // Send request
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = json.toString().getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error generating text: " + e.getMessage();
+
+            // Read response
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                try (Scanner scanner = new Scanner(conn.getInputStream(), StandardCharsets.UTF_8)) {
+                    String fullResponse = scanner.useDelimiter("\\A").next();
+                    JSONObject responseJson = new JSONObject(fullResponse);
+
+                    // Only return the actual AI message
+                    return responseJson.getString("response").trim();
+                }
+            } else {
+                return "Error: Received response code " + responseCode;
+            }
+
+        } catch (Exception ex) {
+            return "Exception: " + ex.getMessage();
         }
     }
 }
