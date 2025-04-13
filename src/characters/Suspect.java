@@ -1,58 +1,47 @@
 package characters;
 
 public class Suspect {
-    private String name;
-    private String role;
-    private String motive;
-    private boolean isGuilty;
-    private String personality; //to define each NPCs personality YAY
-
-    public Suspect(String name, String role, String motive, String personality) {
+    private final String name;
+    private final int age;
+    private final String heritage;
+    private final String role;
+    private final String personality;
+    private final String background;
+    private final String relationships;
+    private boolean isMurderer;
+    
+    public Suspect(String name, int age, String heritage, String role, String personality, String background, String relationships, boolean isMurderer) {
         this.name = name;
+        this.age = age;
+        this.heritage = heritage;
         this.role = role;
-        this.motive = motive;
         this.personality = personality;
-        this.isGuilty = false;
+        this.background = background;
+        this.relationships = relationships;
+        this.isMurderer = isMurderer;
     }
-
-    // Getters and setters for the fields
+    
     public String getName() {
         return name;
     }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public String getMotive() {
-        return motive;
-    }
-
-    public void setMotive(String motive) {
-        this.motive = motive;
-    }
-
-    public boolean isGuilty() {
-        return isGuilty;
-    }
-
-    public void setGuilty(boolean isGuilty) {
-        this.isGuilty = isGuilty;
+    
+    public boolean isMurderer() {
+        return isMurderer;
     }
     
-    public String getPersonality() {
-        return personality;
+    public void setMurderer(boolean isMurderer) {
+        this.isMurderer = isMurderer;
     }
-
-    public void setSalutation(String salutation) {
-        // Implementation for setting salutation
+    
+    @Override
+    public String toString() {
+        return "Name: " + name + "\n" +
+               "Age: " + age + "\n" +
+               "Heritage: " + heritage + "\n" +
+               "Role: " + role + "\n" +
+               "Personality: " + personality + "\n" +
+               "Background: " + background + "\n" +
+               "Relationships: " + relationships + "\n" +
+               "Murderer: " + (isMurderer ? "Yes" : "No") + "\n";
     }
 }
