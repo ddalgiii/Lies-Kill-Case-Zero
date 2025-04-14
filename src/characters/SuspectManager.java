@@ -70,4 +70,12 @@ public class SuspectManager {
             System.out.println(suspect);
         }
     }
+    public Suspect getSuspectByName(String name) {
+        for (Suspect suspect : suspects) {
+            if (suspect.getName().equals(name)) {
+                return suspect;
+            }
+        }
+        return null; // Returns null if no suspect with the given name is found
+    }
 }
