@@ -34,24 +34,71 @@ public class ChatBox {
     private final String playerName;
     private final Suspect murderer;
     private final String murderLocation;
+    private final String bodyDiscoveredBy;
+    private final String murderMethod;
     private boolean introductionsComplete = false;
     private final Map<String, String> suspectNotes = new HashMap<>();
     private Button notepadButton;
+    private Button accuseButton; // Added accuse button
 
     private final Map<String, String> unusualDemeanors = new HashMap<>();
 
-    public ChatBox(SuspectManager suspectManager, String playerName, Suspect murderer, String murderLocation) {
+    public ChatBox(SuspectManager suspectManager, String playerName, Suspect murderer, String murderLocation, String murderMethod, String bodyDiscoveredBy) {
         this.suspectManager = suspectManager;
         this.playerName = playerName;
         this.murderer = murderer;
         this.murderLocation = murderLocation;
+        this.murderMethod = murderMethod;
+        this.bodyDiscoveredBy = bodyDiscoveredBy;
+        chatArea = new TextArea();
+        chatArea.setEditable(false);
+        chatArea.setWrapText(true);
 
-        chatArea = createChatTextArea();
-        inputField = createInputField();
-        npcList = createNpcListView();
-        VBox npcMenu = createNpcMenu();
-        VBox chatInputArea = createChatInputArea();
-        HBox controls = createControls();
+        inputField = new TextField();
+        inputField.setPromptText("Ask a question...");
+        inputField.setOnAction(e -> processInput());
+        inputField.setDisable(true); // Disable input until introductions are done
+
+        npcList = new ListView<>();
+        npcList.getItems().addAll(suspectManager.getSuspects().stream()
+                .map(Suspect::getName)
+                .collect(Collectors.toList()));
+        npcList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                selectedNPC = newVal;
+                inputField.setDisable(false); // Enable input when an NPC is selected
+            } else {
+                inputField.setDisable(true);
+            }
+        });
+        npcList.setPrefWidth(150);
+
+        Label npcLabel = new Label("Suspects:");
+        VBox npcMenu = new VBox(10, npcLabel, npcList);
+        npcMenu.setAlignment(Pos.TOP_LEFT);
+        npcMenu.setPrefWidth(180);
+        npcMenu.setPadding(new Insets(10));
+
+        chatArea.setPrefHeight(400);
+        VBox chatInputArea = new VBox(10, chatArea, inputField);
+        chatInputArea.setPadding(new Insets(10));
+
+        notepadButton = new Button("Notepad");
+        notepadButton.setOnAction(e -> showNotepad());
+
+        accuseButton = new Button("Accuse");
+        accuseButton.setOnAction(e -> {
+            VerdictScreen verdictScreen = new VerdictScreen(suspectManager, murderer, murderMethod, murderLocation, bodyDiscoveredBy);
+            verdictScreen.setOnGameEnd(() -> {
+                // Handle what happens after the verdict screen is closed, e.g., exit the application
+                Platform.exit();
+            });
+            verdictScreen.showVerdictScreen();
+        });
+
+        HBox controls = new HBox(10, notepadButton, accuseButton);
+        controls.setAlignment(Pos.CENTER_RIGHT);
+        controls.setPadding(new Insets(10));
 
         mainLayout = new BorderPane();
         mainLayout.setLeft(npcMenu);
@@ -63,65 +110,15 @@ public class ChatBox {
         startIntroductions();
     }
 
-    private TextArea createChatTextArea() {
-        TextArea textArea = new TextArea();
-        textArea.setEditable(false);
-        textArea.setWrapText(true);
-        textArea.setPrefHeight(400);
-        return textArea;
-    }
-
-    private TextField createInputField() {
-        TextField textField = new TextField();
-        textField.setPromptText("Ask a question...");
-        textField.setOnAction(e -> processInput());
-        textField.setDisable(true); // Disable input until introductions are done
-        return textField;
-    }
-
-    private ListView<String> createNpcListView() {
-        ListView<String> listView = new ListView<>();
-        listView.getItems().addAll(suspectManager.getSuspects().stream()
-                .map(Suspect::getName)
-                .collect(Collectors.toList()));
-        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                selectedNPC = newVal;
-                inputField.setDisable(false); // Enable input when an NPC is selected
-            } else {
-                inputField.setDisable(true);
-            }
-        });
-        listView.setPrefWidth(150);
-        return listView;
-    }
-
-    private VBox createNpcMenu() {
-        Label npcLabel = new Label("Suspects:");
-        VBox npcMenu = new VBox(10, npcLabel, npcList);
-        npcMenu.setAlignment(Pos.TOP_LEFT);
-        npcMenu.setPrefWidth(180);
-        npcMenu.setPadding(new Insets(10));
-        return npcMenu;
-    }
-
-    private VBox createChatInputArea() {
-        VBox chatInputArea = new VBox(10, chatArea, inputField);
-        chatInputArea.setPadding(new Insets(10));
-        return chatInputArea;
-    }
-
-    private HBox createControls() {
-        notepadButton = new Button("Notepad");
-        notepadButton.setOnAction(e -> showNotepad());
-        HBox controls = new HBox(10, notepadButton);
-        controls.setAlignment(Pos.CENTER_RIGHT);
-        controls.setPadding(new Insets(10));
-        return controls;
-    }
-
-    private void assignUnusualDemeanors() {
+    private void startIntroductions() {
+        Suspect daryus = suspectManager.getSuspectByName("Daryus Denham");
+        Suspect margaret = suspectManager.getSuspectByName("Lady Margaret de Valimont");
+        Suspect anna = suspectManager.getSuspectByName("Anna Joe");
+        Suspect loenna = suspectManager.getSuspectByName("Loenna Kammerzell");
+        Suspect scottie = suspectManager.getSuspectByName("Scottie Joe");
         Random random = new Random();
+
+        // Determine unusual demeanors (excluding Loenna and Daryus)
         for (Suspect suspect : suspectManager.getSuspects()) {
             if (!suspect.getName().equals("Loenna Kammerzell") && !suspect.getName().equals("Daryus Denham")) {
                 String[] demeanors = {"acting overly friendly", "seeming unusually nervous", "avoiding eye contact", "being surprisingly cheerful", "appearing quite agitated"};
@@ -130,63 +127,52 @@ public class ChatBox {
                 }
             }
         }
-    }
 
-    private void startIntroductions() {
-        assignUnusualDemeanors();
-        appendIntroductionLine("Daryus Denham", String.format("Welcome, %s. I am Daryus Denham, the Chamberlain of the late Duke.", playerName));
-        appendIntroductionLine("", "Daryus Denham leads you to Lady Margaret de Valimont's study.");
-        appendIntroductionLine("Lady Margaret de Valimont", "You must be the investigator. Thank you for coming. With us are Anna Joe, the head maid, and Loenna Kammerzell, a maid of the household.");
-        appendIntroductionLine("Anna Joe", String.format("A pleasure to meet you, Investigator %s.", unusualDemeanors.getOrDefault("Anna Joe", ""), playerName));
-        appendIntroductionLine("Loenna Kammerzell", "... (nods silently in greeting)");
-        appendIntroductionLine("", "Daryus Denham: Now, let's head to the stables.");
-        appendIntroductionLine("", "You arrive at the stables.");
-        appendIntroductionLine("Daryus Denham", "This is our stable boy, Scottie Joe.");
-        appendIntroductionLine("Scottie Joe", String.format("G'day, Investigator. Hope you can sort this mess out.", unusualDemeanors.getOrDefault("Scottie Joe", "acting casually"), playerName));
-        appendIntroductionLine("", "You are now back with Lady Margaret and can begin your questioning. Select a suspect from the list.");
+        appendMessage(String.format("Daryus Denham: Welcome, %s. I am Daryus Denham, the Chamberlain of the late Duke.", playerName));
+        appendMessage(String.format("Daryus Denham leads you to Lady Margaret de Valimont's study."));
+        appendMessage(String.format("Lady Margaret de Valimont: You must be the investigator. Thank you for coming. With us are Anna Joe, the head maid, and Loenna Kammerzell, a maid of the household."));
+        appendMessage(String.format("Anna Joe (%s): A pleasure to meet you, Investigator %s.", unusualDemeanors.getOrDefault("Anna Joe", ""), playerName));
+        appendMessage(String.format("Loenna Kammerzell: ... (nods silently in greeting)"));
+        appendMessage(String.format("Daryus Denham: Now, let's head to the stables."));
+        appendMessage(String.format("You arrive at the stables."));
+        appendMessage(String.format("Daryus Denham: This is our stable boy, Scottie Joe."));
+        appendMessage(String.format("Scottie Joe (%s): G'day, Investigator. Hope you can sort this mess out.", unusualDemeanors.getOrDefault("Scottie Joe", "acting casually"), playerName));
+        appendMessage(String.format("You are now back with Lady Margaret and can begin your questioning. Select a suspect from the list."));
 
         introductionsComplete = true;
         inputField.setDisable(false); // Enable input after introductions
-    }
-
-    private void appendIntroductionLine(String speaker, String text) {
-        if (speaker.isEmpty()) {
-            appendMessage(text);
-        } else {
-            appendMessage(speaker + ": " + text);
-        }
     }
 
     private void processInput() {
         String userInput = inputField.getText().trim();
         if (!userInput.isEmpty() && !selectedNPC.equals("Unknown") && introductionsComplete) {
             appendMessage("You to " + selectedNPC + ": " + userInput);
-    
+
             new Thread(() -> {
                 String response;
                 try {
-                    Suspect suspect = this.suspectManager.getSuspectByName(selectedNPC); // Use the class's suspectManager
+                    Suspect suspect = suspectManager.getSuspectByName(selectedNPC);
                     if (suspect != null) {
                         String prompt = buildNpcPrompt(suspect, userInput);
                         response = AIDialogueGenerator.generateText(prompt);
-    
+
                         if (suspect.equals(murderer)) {
                             response = processMurdererResponse(response);
                         }
                         // Store the NPC's response for potential later analysis
                         suspectNotes.put(selectedNPC, suspectNotes.getOrDefault(selectedNPC, "") + "\nYou: " + userInput + "\n" + selectedNPC + ": " + response);
-    
+
                     } else {
                         response = "Error: Suspect not found in the game.";
                     }
                 } catch (Exception e) {
                     response = "I don't understand the question right now.";
                 }
-    
+
                 String finalResponse = selectedNPC + ": " + response;
                 Platform.runLater(() -> appendMessage(finalResponse));
             }).start();
-    
+
             inputField.clear();
         } else if (!introductionsComplete) {
             appendMessage("Please wait until the introductions are complete before questioning.");
