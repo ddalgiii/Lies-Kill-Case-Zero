@@ -16,11 +16,19 @@ import org.json.JSONObject;
 
 public class AIDialogueGenerator {
     private static final String API_URL = " your API URL "; // Ensure correct API URL
+    private static final int CONNECT_TIMEOUT = 10000; //10 seconds
+    private static final int READ_TIMEOUT = 10000;
 
     public static String generateText(String userInput) {
+        HttpURLConnection conn = null; //intilize
         try {
             URL url = new URL(API_URL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
+
+            //timeouts
+            conn.setConnectTimeout(CONNECT_TIMEOUT);
+            conn.setReadTimeout(READ_TIMEOUT);
+
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
@@ -51,8 +59,17 @@ public class AIDialogueGenerator {
                 return "Error: Received response code " + responseCode;
             }
 
+        } catch (java.net.SocketTimeoutException e) {
+            return "Error: Connection timed out.";
         } catch (Exception ex) {
             return "Exception: " + ex.getMessage();
+        } finally {
+            // Disconnect the connection to release resources
+            // It's important to do this in a finally block to ensure it happens
+            // even if exceptions occur.
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 }
