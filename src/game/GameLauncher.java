@@ -1,10 +1,8 @@
 package game;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.Random;
 
+import ai.AIMurderLogic;
 import characters.Suspect;
 import characters.SuspectManager;
 import javafx.application.Application;
@@ -21,14 +19,18 @@ import ui.ChatBox;
 
 public class GameLauncher extends Application {
 
-    private static String[] MURDER_LOCATIONS;
     private String playerName = "Investigator"; // Default name
     private String murderLocation;
     private SuspectManager suspectManager;
     private Suspect murderer;
+    private String murderMethod;
+    private String bodyDiscoveredBy;
+
+    private static final String[] MURDER_LOCATIONS = {
+            "kitchen", "study", "library", "grand hall", "gardens", "wine cellar", "stables"
+    };
 
     public GameLauncher() {
-        loadGameConfig();
         Random random = new Random();
         this.murderLocation = MURDER_LOCATIONS[random.nextInt(MURDER_LOCATIONS.length)];
         this.suspectManager = new SuspectManager();
@@ -39,31 +41,15 @@ public class GameLauncher extends Application {
                 break;
             }
         }
+        AIMurderLogic.determineMurderDetails(this.suspectManager);
+        this.murderMethod = AIMurderLogic.getMurderMethod();
+        this.bodyDiscoveredBy = AIMurderLogic.getBodyDiscoveredBy();
     }
 
-    private void loadGameConfig() {
-        Properties config = new Properties();
-        try (InputStream input = getClass().getClassLoader().getResourceAsStream("game_config.properties")) {
-            if (input == null) {
-                System.err.println("Could not load game_config.properties");
-                MURDER_LOCATIONS = new String[]{"kitchen", "study", "library", "grand hall", "gardens", "wine cellar", "stables"}; // Default
-                return;
-            }
-            config.load(input);
-            String locationsProperty = config.getProperty("murder.locations");
-            if (locationsProperty != null && !locationsProperty.isEmpty()) {
-                MURDER_LOCATIONS = locationsProperty.split(",");
-            } else {
-                System.err.println("Murder locations not found or empty in game_config.properties. Using default.");
-                MURDER_LOCATIONS = new String[]{"kitchen", "study", "library", "grand hall", "gardens", "wine cellar", "stables"}; // Default
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            MURDER_LOCATIONS = new String[]{"kitchen", "study", "library", "grand hall", "gardens", "wine cellar", "stables"}; // Default on error
-        }
-    }
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Lies Kill: Case Zero");
 
-    private VBox createInitialUILayout(Stage primaryStage) {
         // Input field for player's name
         TextField nameInput = new TextField();
         nameInput.setPromptText("Enter your name");
@@ -93,14 +79,8 @@ public class GameLauncher extends Application {
 
         VBox layout = new VBox(10, new Label("Enter Your Name:"), nameInput, prologueText, continueButton);
         layout.setPadding(new Insets(20));
-        return layout;
-    }
-
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Lies Kill: Case Zero");
-        VBox layout = createInitialUILayout(primaryStage);
         Scene scene = new Scene(layout, 600, 450);
+
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -121,7 +101,7 @@ public class GameLauncher extends Application {
 
     private void switchToChatScene(Stage primaryStage) {
         Platform.runLater(() -> {
-            ChatBox chatBox = new ChatBox(suspectManager, playerName, murderer, murderLocation);
+            ChatBox chatBox = new ChatBox(suspectManager, playerName, murderer, murderLocation, murderMethod, bodyDiscoveredBy);
             Scene chatScene = chatBox.getChatScene();
             primaryStage.setScene(chatScene);
         });
