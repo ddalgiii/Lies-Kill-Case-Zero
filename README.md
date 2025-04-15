@@ -47,3 +47,6 @@ Lies Kill: Case Zero is an **AI-driven murder mystery**
   AI Intergration: Ollama Mistral AI
   
   Development Enviroment: VsCode
+
+##  Wiki
+  [Lies Kill: Case Zero Wiki](https://github.com/ddalgiii/Lies-Kill-Case-Zero/wiki)
